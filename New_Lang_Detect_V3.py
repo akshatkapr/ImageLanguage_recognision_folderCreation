@@ -11,7 +11,7 @@ import langid
 import pycountry
 
 pytesseract.pytesseract.tesseract_cmd = "C:\\Program Files\\Tesseract-ocr\\tesseract.exe"
-check_lang = ["ces","fra","ron","ukr","rus","pol","chi_sim","chi_tra","eng","dan","fil","deu","ell","ind","ita","jpn","kor","nor","spa","swe","tur","vie","fin","msa","tha"]
+check_lang = ["ces","fra","ron","ukr","rus","pol","chi_sim","chi_tra","nld","por","eng","dan","fil","deu","ell","ind","ita","jpn","kor","nor","spa","swe","tur","vie","fin","msa","tha"]
 c = 0
 def Average(result_list):
     return reduce(lambda a, b: a + b, result_list) / len(result_list)
@@ -38,19 +38,17 @@ def imageprocessing(img2):
     filename2 = "{}.jpg".format(os.getpid())
     cv2.imwrite(filename2, gray)
     return filename2
-    
-#creating folders
-#for a in check_lang :
-#    os.mkdir(a)
-#print("folders Created ")
 
-for img in glob.glob('C:\Test\*.png'):
+
+Input_path = input('Enter the file path: ')
+
+for img in glob.glob(Input_path + '\*.png'):
     t1_start = time.perf_counter()
     c = c + 1
     src_dir = os.path.abspath(img)
     print("source Directory " , src_dir)
     parent_dir = os.path.dirname(src_dir)
-    print("parent Directory " , parent_dir)
+    #print("parent Directory " , parent_dir)
 
     filename = imageprocessing(img)
     
@@ -70,16 +68,27 @@ for img in glob.glob('C:\Test\*.png'):
     text = pytesseract.image_to_string(Image.open(filename),lang=Detected_lang)
     a, b =langid.classify(text)
     print("Langid language= ",a)
-    lang1=pycountry.languages.get(alpha_2=a)
-    lang2 = lang1.name
+    if a == 'zh':
+        lang2 = Detected_lang
+    else :
+        lang1=pycountry.languages.get(alpha_2=a)
+        lang2 = lang1.name
+    if lang2 == 'Tagalog':
+        lang2 = 'Filipino'
     print(lang2)
     dst_dir = os.path.join(parent_dir, lang2)
     if os.path.exists(dst_dir)== False:
         os.mkdir(dst_dir)
            
-
+    
     #rename the file
-    e = parent_dir + "\\" + lang2 + str(c)+ ".png"
+    totalFiles = 1
+    items = os.listdir(dst_dir)
+    for item in items:
+        if os.path.isfile(os.path.join(dst_dir, item)):
+            totalFiles = totalFiles + 1
+    
+    e = parent_dir + "\\" + lang2 + str(totalFiles)+ ".png"
     os.rename(src_dir, e)
     print("new name " , e)
 
@@ -92,5 +101,5 @@ for img in glob.glob('C:\Test\*.png'):
     t1_stop = time.perf_counter()
     print("Elapsed time:", t1_stop - t1_start) # print performance indicator
     
-    
+input('Press any key')    
     
